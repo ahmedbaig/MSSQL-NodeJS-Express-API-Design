@@ -1,5 +1,6 @@
 const bodyParser = require('body-parser');
 const express = require('express');
+const cors = require('cors');
 const fs = require('fs');
 const historyApiFallback = require('connect-history-api-fallback');
 const mongoose = require('mongoose');
@@ -12,7 +13,7 @@ const config = require('../config/config');
 const webpackConfig = require('../webpack.config');
 
 const isDev = process.env.NODE_ENV !== 'production';
-const port  = process.env.PORT || 8080;
+const port  = process.env.PORT || 3017;
 
 
 // Configuration
@@ -25,11 +26,13 @@ mongoose.connect(config.db, {
 mongoose.Promise = global.Promise;
 
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // API routes
 require('./routes')(app);
+
+app.use(cors());
 
 if (isDev) {
   const compiler = webpack(webpackConfig);
@@ -50,7 +53,7 @@ if (isDev) {
       modules: false
     }
   }));
-
+  
   app.use(webpackHotMiddleware(compiler));
   app.use(express.static(path.resolve(__dirname, '../dist')));
 } else {
@@ -65,7 +68,7 @@ app.listen(port, '0.0.0.0', (err) => {
   if (err) {
     console.log(err);
   }
-
+  console.info('CORS enabled web server running at port ', port);
   console.info('>>> 🌎 Open http://0.0.0.0:%s/ in your browser.', port);
 });
 

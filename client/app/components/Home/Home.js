@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { getFromStorage,setInStorage } from '../../utils/storage';
+import SignIn from '../Forms/SignIn';
+import SignUp from '../Forms/SignUp';
 import 'whatwg-fetch';
 
 class Home extends Component {
@@ -6,100 +9,202 @@ class Home extends Component {
     super(props);
 
     this.state = {
-      counters: []
+      isLoading: true,
+      token: '',
+      signUpError: '',
+      signInError: '',
+      signInData: {email:'', password: ''},
+      signUpData: {email:'', password: '', firstName: '', lastName: ''}
     };
-
-    this.newCounter = this.newCounter.bind(this);
-    this.incrementCounter = this.incrementCounter.bind(this);
-    this.decrementCounter = this.decrementCounter.bind(this);
-    this.deleteCounter = this.deleteCounter.bind(this);
-
-    this._modifyCounter = this._modifyCounter.bind(this);
   }
 
   componentDidMount() {
-    fetch('/api/counters')
-      .then(res => res.json())
-      .then(json => {
-        this.setState({
-          counters: json
+    const token = getFromStorage('the_main_app:token');
+    if(token){
+      // verify token
+      fetch('http://localhost:3017/api/account/verify?token='+token,{
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Request-Origin': '*',
+          'Access-Control-Allow-Origin': '*',
+          "Access-Control-Allow-Headers": "access-control-allow-headers,access-control-allow-origin,content-type",
+          'Content-Type': 'application/json'
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          if(json.success){
+            this.setState({
+              token: token, 
+              isLoading: false
+            });
+          }else{
+            this.setState({
+              isLoading: false,
+            });
+          }
         });
+    }else{
+      this.setState({
+        isLoading: false,
       });
-  }
-
-  newCounter() {
-    fetch('/api/counters', { method: 'POST' })
-      .then(res => res.json())
-      .then(json => {
-        let data = this.state.counters;
-        data.push(json);
-
-        this.setState({
-          counters: data
-        });
-      });
-  }
-
-  incrementCounter(index) {
-    const id = this.state.counters[index]._id;
-
-    fetch(`/api/counters/${id}/increment`, { method: 'PUT' })
-      .then(res => res.json())
-      .then(json => {
-        this._modifyCounter(index, json);
-      });
-  }
-
-  decrementCounter(index) {
-    const id = this.state.counters[index]._id;
-
-    fetch(`/api/counters/${id}/decrement`, { method: 'PUT' })
-      .then(res => res.json())
-      .then(json => {
-        this._modifyCounter(index, json);
-      });
-  }
-
-  deleteCounter(index) {
-    const id = this.state.counters[index]._id;
-
-    fetch(`/api/counters/${id}`, { method: 'DELETE' })
-      .then(_ => {
-        this._modifyCounter(index, null);
-      });
-  }
-
-  _modifyCounter(index, data) {
-    let prevData = this.state.counters;
-
-    if (data) {
-      prevData[index] = data;
-    } else {
-      prevData.splice(index, 1);
     }
+  }
+
+  handleSignIn(data){  
+    let property = this.state.signInData;
+    property.email = data.email;
+    property.password = data.password;
 
     this.setState({
-      counters: prevData
+      signInData: property
     });
+
+    // POST REQUEST
+    fetch('http://localhost:3017/api/account/signin', 
+      { 
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Request-Origin': '*',
+          'Access-Control-Allow-Origin': '*',
+          "Access-Control-Allow-Headers": "access-control-allow-headers,access-control-allow-origin,content-type",
+          'Content-Type': 'application/json'
+        },
+        body : JSON.stringify({
+          email: this.state.signInData.email,
+          password: this.state.signInData.password
+        }),
+      }).then(res => res.json())
+      .then(json => {
+        console.log(json)
+        if(json.success){
+          setInStorage('the_main_app:token', json.token);
+          this.setState({
+            signInError: json.message,
+            isLoading: false,
+            token: json.token
+          });
+        }else{
+          this.setState({
+            signInError: json.message
+          });
+        }
+      });
+    
+  }
+
+  handleSignUp(data){  
+    let property = this.state.signUpData;
+    property.email = data.email;
+    property.password = data.password;
+    property.firstName = data.firstName;
+    property.lastName = data.lastName;
+
+    this.setState({
+      signUpData: property
+    });
+
+    // POST REQUEST
+    fetch('http://localhost:3017/api/account/signup', 
+      {  
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Request-Origin': '*',
+          'Access-Control-Allow-Origin': '*',
+          "Access-Control-Allow-Headers": "access-control-allow-headers,access-control-allow-origin,content-type",
+          'Content-Type': 'application/json'
+        },
+        body : JSON.stringify({
+          firstName: this.state.signUpData.firstName,
+          lastName: this.state.signUpData.lastName,
+          email: this.state.signUpData.email,
+          password: this.state.signUpData.password
+        }),
+      }).then(res => res.json())
+      .then(json => {
+        if(json.success){
+          this.setState({
+            signUpError: json.message,
+            isLoading: false
+          });
+        }else{
+          this.setState({
+            signUpError: json.message
+          });
+        }
+      });
+  }
+
+  handleLogout(){
+    this.setState({
+      isLoading: true
+    })
+    const token = getFromStorage('the_main_app:token');
+    if(token){
+      // verify token
+      fetch('http://localhost:3017/api/account/logout?token='+token,{
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Request-Origin': '*',
+          'Access-Control-Allow-Origin': '*',
+          "Access-Control-Allow-Headers": "access-control-allow-headers,access-control-allow-origin,content-type",
+          'Content-Type': 'application/json'
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          if(json.success){
+            this.setState({
+              token: '', 
+              isLoading: false
+            });
+          }else{
+            this.setState({
+              isLoading: false,
+            });
+          }
+        });
+    }else{
+      this.setState({
+        isLoading: false,
+      });
+    }
   }
 
   render() {
+    const {
+      isLoading,
+      token
+    } = this.state;
+
+    if(isLoading){
+      return (
+        <div>
+          <p>Loading ...</p>
+        </div>);
+    }
+
+    if(!token){
+      return (
+        <div>
+          <SignUp
+            signuperr = {this.state.signUpError}
+            data = {this.handleSignUp.bind(this)}/>
+          <SignIn
+            signinerr = {this.state.signInError}
+            data = {this.handleSignIn.bind(this)}/>
+        </div>
+      );
+    }
+
     return (
       <div>
-        <p>Counters:</p>
-
-        <ul>
-          { this.state.counters.map((counter, i) => (
-            <li key={i}>
-              <span>{counter.count} </span>
-              <button onClick={() => this.incrementCounter(i)}>+</button>
-              <button onClick={() => this.decrementCounter(i)}>-</button>
-              <button onClick={() => this.deleteCounter(i)}>x</button>
-            </li>
-          )) }
-        </ul>
-
-        <button onClick={this.newCounter}>New counter</button>
+        Account
+        <button onClick={this.handleLogout.bind(this)}>logout</button>
       </div>
     );
   }
