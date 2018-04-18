@@ -1,21 +1,13 @@
 import React, { Component } from 'react';
-import { getFromStorage,setInStorage } from '../../utils/storage';
-import SignIn from '../Forms/SignIn';
-import SignUp from '../Forms/SignUp';
+// import cinema from './Cinema';
+// import movies from './Movies';
+// import showtime from './Showtime';
 import 'whatwg-fetch';
 
 class Home extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      isLoading: true,
-      token: '',
-      signUpError: '',
-      signInError: '',
-      signInData: {email:'', password: ''},
-      signUpData: {email:'', password: '', firstName: '', lastName: ''}
-    };
   }
 
   componentDidMount() {
@@ -176,35 +168,11 @@ class Home extends Component {
   }
 
   render() {
-    const {
-      isLoading,
-      token
-    } = this.state;
-
-    if(isLoading){
-      return (
-        <div>
-          <p>Loading ...</p>
-        </div>);
-    }
-
-    if(!token){
-      return (
-        <div>
-          <SignUp
-            signuperr = {this.state.signUpError}
-            data = {this.handleSignUp.bind(this)}/>
-          <SignIn
-            signinerr = {this.state.signInError}
-            data = {this.handleSignIn.bind(this)}/>
-        </div>
-      );
-    }
-
     return (
       <div>
-        Account
-        <button onClick={this.handleLogout.bind(this)}>logout</button>
+        {/* <cinema/>
+        <movies/>
+        <showtime/> */}
       </div>
     );
   }

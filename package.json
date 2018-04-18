@@ -1,8 +1,8 @@
 {
-  "name": "MERN-boilerplate",
+  "name": "React-mssql",
   "version": "1.0.0",
-  "description": "MERN stack project boilerplate",
-  "author": "Eugene Cheung",
+  "description": "SERN - SQL EXPRESS REACT NODE",
+  "author": "Ahmed Baig",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arkon/MERN-boilerplate.git"
@@ -28,13 +28,14 @@
     "extract-text-webpack-plugin": "^3.0.0",
     "html-webpack-plugin": "^2.30.1",
     "mongoose": "^4.11.7",
-    "node-sass": "^4.5.3",
+    "mssql": "^3.3.0",
     "nodemon": "^1.11.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-hot-loader": "^3.0.0-beta.6",
     "react-router": "^4.1.2",
     "react-router-dom": "^4.1.2",
+    "tedious": "^2.3.1",
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
@@ -46,7 +47,6 @@
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.28.5",
     "postcss-loader": "^2.0.6",
-    "sass-loader": "^6.0.6",
     "style-loader": "^0.18.2",
     "webpack": "^3.11.0",
     "webpack-dev-middleware": "^1.12.0",
