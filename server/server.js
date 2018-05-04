@@ -44,7 +44,11 @@ app.get('/api/moviesFetch/', cors(), (req, res) => {
     var req = new sql.Request(conn);
     req.query('SELECT * FROM MOVIES')
     .then(function(recordSet){
-      return res.send(recordSet);
+      const resposnsed = {
+        success: true,
+        data: recordSet
+      }
+      return res.send(resposnsed);
     }).catch(function(err){
       console.log(err);
     })
@@ -55,22 +59,112 @@ app.get('/api/showtimeFetch/', cors(), (req, res) => {
   conn.connect()
   .then(function(){
     var req = new sql.Request(conn);
-    req.query('SELECT * FROM SHOWTIME INNER JOIN MOVIES M ON M.MOVIEID = SHOWTIME.MOVIEID')
+    req.query('SELECT SCREENNUMBER, M.MOVIEID, MOVIENAME, MOVIETYPE, RATING, RUNTIME, TIMING FROM SHOWTIME INNER JOIN MOVIES M ON M.MOVIEID = SHOWTIME.MOVIEID')
     .then(function(recordSet){
-      return res.send(recordSet);
+      const resposnsed = {
+        success: true,
+        data: recordSet
+      }
+      return res.send(resposnsed);
     }).catch(function(err){
       console.log(err);
     })
   });
 });
 app.get('/api/cinemaFetch/', cors(), (req, res) => {
+  const { query } = req;
+  const { cinema } = query
   var conn = new sql.Connection(config);
   conn.connect()
   .then(function(){
     var req = new sql.Request(conn);
-    req.query('SELECT * FROM CINEMA INNER JOIN CINEMATIMINGS C ON CINEMA.SCREENNUMBER = C.SCREENNUMBER')
+    req.query('SELECT * FROM CINEMA INNER JOIN CINEMATIMINGS C ON CINEMA.SCREENNUMBER = C.SCREENNUMBER WHERE C.SCREENNUMBER = '+cinema)
     .then(function(recordSet){
-      return res.send(recordSet);
+      const resposnsed = {
+        success: true,
+        data: recordSet
+      }
+      return res.send(resposnsed);
+    }).catch(function(err){
+      console.log(err);
+    })
+  });
+});
+app.get('/api/showselection/', cors(), (req, res) => {
+  const { query } = req;
+  const { cinema, showtime } = query
+  var conn = new sql.Connection(config);
+  conn.connect()
+  .then(function(){
+    var req = new sql.Request(conn);
+    req.query('SELECT SCREENNUMBER, M.MOVIEID, MOVIENAME, MOVIETYPE, RATING, RUNTIME, TIMING FROM SHOWTIME INNER JOIN MOVIES M ON M.MOVIEID = SHOWTIME.MOVIEID WHERE TIMING='+showtime+' AND SCREENNUMBER='+cinema)
+    .then(function(recordSet){
+      const resposnsed = {
+        success: true,
+        data: recordSet
+      }
+      return res.send(resposnsed);
+    }).catch(function(err){
+      console.log(err);
+    })
+  });
+});
+
+app.get('/api/showselection/gold', cors(), (req, res) => {
+  const { query } = req;
+  const { cinema, movie } = query
+  var conn = new sql.Connection(config);
+  conn.connect()
+  .then(function(){
+    var req = new sql.Request(conn);
+    req.query('SELECT G.SEATNUMBER, SEATTYPE, PRICE FROM MOVIESEATS INNER JOIN MOVIES ON MOVIESEATS.MOVIEID = MOVIES.MOVIEID INNER JOIN SEATCATEGORY S2 ON MOVIESEATS.SEATNUMBER = S2.SEATNUMBER INNER JOIN GOLDCATEGORY G ON S2.SEATNUMBER = G.SEATNUMBER WHERE MOVIENAME = '+movie)
+    .then(function(recordSet){
+      const resposnsed = {
+        success: true,
+        data: recordSet
+      }
+      return res.send(resposnsed);
+    }).catch(function(err){
+      console.log(err);
+    })
+  });
+});
+
+
+app.get('/api/showselection/silver', cors(), (req, res) => {
+  const { query } = req;
+  const { cinema, movie } = query
+  var conn = new sql.Connection(config);
+  conn.connect()
+  .then(function(){
+    var req = new sql.Request(conn);
+    req.query('SELECT G.SEATNUMBER, SEATTYPE, PRICE FROM MOVIESEATS INNER JOIN MOVIES ON MOVIESEATS.MOVIEID = MOVIES.MOVIEID INNER JOIN SEATCATEGORY S2 ON MOVIESEATS.SEATNUMBER = S2.SEATNUMBER INNER JOIN SILVERCATEGORY G ON S2.SEATNUMBER = G.SEATNUMBER WHERE MOVIENAME = '+movie)
+    .then(function(recordSet){
+      const resposnsed = {
+        success: true,
+        data: recordSet
+      }
+      return res.send(resposnsed);
+    }).catch(function(err){
+      console.log(err);
+    })
+  });
+});
+
+app.get('/api/showselection/regular', cors(), (req, res) => {
+  const { query } = req;
+  const { cinema, movie } = query
+  var conn = new sql.Connection(config);
+  conn.connect()
+  .then(function(){
+    var req = new sql.Request(conn);
+    req.query('SELECT G.SEATNUMBER, SEATTYPE, PRICE FROM MOVIESEATS INNER JOIN MOVIES ON MOVIESEATS.MOVIEID = MOVIES.MOVIEID INNER JOIN SEATCATEGORY S2 ON MOVIESEATS.SEATNUMBER = S2.SEATNUMBER INNER JOIN REGUCATEGORY G ON S2.SEATNUMBER = G.SEATNUMBER WHERE MOVIENAME = '+movie)
+    .then(function(recordSet){
+      const resposnsed = {
+        success: true,
+        data: recordSet
+      }
+      return res.send(resposnsed);
     }).catch(function(err){
       console.log(err);
     })
@@ -78,14 +172,18 @@ app.get('/api/cinemaFetch/', cors(), (req, res) => {
 });
 
 app.get('/api/seatsFetch/', cors(), (req, res) => {
-  
+
   var conn = new sql.Connection(config);
   conn.connect()
   .then(function(){
     var req = new sql.Request(conn);
-    req.query('SELECT * FROM GOLDCATEGORY INNER JOIN SEATCATEGORY S ON GOLDCATEGORY.SEATNUMBER = S.SEATNUMBER INNER JOIN SEATCATEGORYMIXES S2 ON S.SEATNUMBER = S2.SEATNUMBER')
+    req.query('')
     .then(function(recordSet){
-      return res.send(recordSet);
+      const resposnsed = {
+        success: true,
+        data: recordSet
+      }
+      return res.send(resposnsed);
     }).catch(function(err){
       console.log(err);
     })
@@ -112,7 +210,7 @@ if (isDev) {
       modules: false
     }
   }));
-  
+
   app.use(webpackHotMiddleware(compiler));
   app.use(express.static(path.resolve(__dirname, '../dist')));
 } else {
